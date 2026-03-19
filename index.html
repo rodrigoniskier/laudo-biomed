@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistema de Laudos - Análises Clínicas</title>
+    <title>Sistema de Laudos - Análises Clínicas (Completo)</title>
     
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 
@@ -21,8 +21,8 @@
         /* ÁREA PRINCIPAL */
         .main-content { flex: 1; padding: 30px; display: flex; flex-direction: column; align-items: center; overflow-y: auto; }
         
-        /* CONTÊINER DO LAUDO (Área que vai para o PDF) */
-        .laudo-container { background-color: white; width: 100%; max-width: 800px; padding: 40px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); margin-bottom: 20px; }
+        /* CONTÊINER DO LAUDO */
+        .laudo-container { background-color: white; width: 100%; max-width: 850px; padding: 40px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); margin-bottom: 20px; }
         
         /* CABEÇALHO DO LAUDO */
         .header-laudo { border-bottom: 2px solid #2b6cb0; padding-bottom: 15px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: flex-end; }
@@ -37,15 +37,16 @@
         .input-group input:focus { outline: none; border-color: #3182ce; }
 
         /* SEÇÕES DE EXAMES */
-        .exam-section { display: none; } /* Escondido por padrão */
-        .exam-section.active { display: block; } /* Exibido quando ativo */
+        .exam-section { display: none; } 
+        .exam-section.active { display: block; } 
         .exam-title { background-color: #ebf8ff; color: #2b6cb0; padding: 10px; margin-bottom: 15px; border-radius: 4px; font-size: 1.2rem; text-align: center; }
 
         /* TABELA DE RESULTADOS */
-        .result-table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
-        .result-table th, .result-table td { border: 1px solid #e2e8f0; padding: 10px; text-align: left; }
-        .result-table th { background-color: #f7fafc; color: #4a5568; font-size: 0.9rem; }
-        .result-table input { width: 100%; border: none; border-bottom: 1px dashed #cbd5e0; padding: 5px; font-size: 0.95rem; background: transparent; }
+        .result-table { width: 100%; border-collapse: collapse; margin-bottom: 20px; page-break-inside: avoid; }
+        .result-table th, .result-table td { border: 1px solid #e2e8f0; padding: 6px 10px; text-align: left; font-size: 0.9rem; }
+        .result-table th { background-color: #f7fafc; color: #4a5568; }
+        .result-table .sub-header { background-color: #edf2f7; font-weight: bold; text-align: center; color: #2d3748; }
+        .result-table input { width: 100%; border: none; border-bottom: 1px dashed #cbd5e0; padding: 4px; font-size: 0.9rem; background: transparent; }
         .result-table input:focus { outline: none; border-bottom-color: #3182ce; }
 
         /* BOTÃO DE GERAR PDF */
@@ -57,16 +58,15 @@
 
     <div class="sidebar">
         <h2>🔬 LabWeb - Painel</h2>
-        <button class="menu-btn active" onclick="showExam('hemograma')">Hemograma</button>
-        <button class="menu-btn" onclick="showExam('bioquimica')">Bioquímica</button>
+        <button class="menu-btn active" onclick="showExam('hemograma')">Hemograma Completo</button>
+        <button class="menu-btn" onclick="showExam('bioquimica')">Bioquímica Geral</button>
         <button class="menu-btn" onclick="showExam('parasitologico')">Parasitológico</button>
-        <button class="menu-btn" onclick="showExam('urinalise')">Urinálise</button>
+        <button class="menu-btn" onclick="showExam('urinalise')">Urinálise (EAS)</button>
         <button class="menu-btn" onclick="showExam('tipagem')">Tipagem Sanguínea</button>
-        <button class="menu-btn" onclick="showExam('sorologia')">Sorologia</button>
+        <button class="menu-btn" onclick="showExam('sorologia')">Imunologia/Sorologia</button>
     </div>
 
     <div class="main-content">
-        
         <div id="laudo-pdf-area" class="laudo-container">
             
             <div class="header-laudo">
@@ -80,92 +80,141 @@
             </div>
 
             <div class="patient-data">
-                <div class="input-group">
-                    <label>Nome do Paciente:</label>
-                    <input type="text" placeholder="Nome completo">
-                </div>
-                <div class="input-group">
-                    <label>Idade / Sexo:</label>
-                    <input type="text" placeholder="Ex: 35 anos / Masculino">
-                </div>
-                <div class="input-group">
-                    <label>Médico Solicitante:</label>
-                    <input type="text" placeholder="Nome do médico">
-                </div>
-                <div class="input-group">
-                    <label>Data da Coleta:</label>
-                    <input type="date">
-                </div>
+                <div class="input-group"><label>Nome do Paciente:</label><input type="text" placeholder="Nome completo"></div>
+                <div class="input-group"><label>Idade / Sexo:</label><input type="text" placeholder="Ex: 35 anos / Masculino"></div>
+                <div class="input-group"><label>Médico Solicitante:</label><input type="text" placeholder="Nome do médico"></div>
+                <div class="input-group"><label>Data da Coleta:</label><input type="date"></div>
             </div>
 
             <div id="hemograma" class="exam-section active">
                 <h3 class="exam-title">Hemograma Completo</h3>
                 <table class="result-table">
-                    <tr>
-                        <th>Exame</th><th>Resultado</th><th>Valores de Referência</th>
-                    </tr>
-                    <tr>
-                        <td>Hemácias</td><td><input type="text" placeholder="Ex: 4.5"></td><td>4.0 a 5.5 milhões/mm³</td>
-                    </tr>
-                    <tr>
-                        <td>Hemoglobina</td><td><input type="text" placeholder="Ex: 13.0"></td><td>12.0 a 16.0 g/dL</td>
-                    </tr>
-                    <tr>
-                        <td>Leucócitos Totais</td><td><input type="text" placeholder="Ex: 7500"></td><td>4.000 a 10.000 /mm³</td>
-                    </tr>
-                    <tr>
-                        <td>Plaquetas</td><td><input type="text" placeholder="Ex: 250000"></td><td>150.000 a 450.000 /mm³</td>
-                    </tr>
+                    <tr><th>Exame</th><th>Resultado</th><th>Valores de Referência</th></tr>
+                    
+                    <tr><td colspan="3" class="sub-header">Eritrograma (Série Vermelha)</td></tr>
+                    <tr><td>Hemácias</td><td><input type="text"></td><td>4.0 a 5.5 milhões/mm³</td></tr>
+                    <tr><td>Hemoglobina</td><td><input type="text"></td><td>12.0 a 16.0 g/dL</td></tr>
+                    <tr><td>Hematócrito</td><td><input type="text"></td><td>36.0 a 47.0 %</td></tr>
+                    <tr><td>VCM</td><td><input type="text"></td><td>80.0 a 100.0 fL</td></tr>
+                    <tr><td>HCM</td><td><input type="text"></td><td>26.0 a 34.0 pg</td></tr>
+                    <tr><td>CHCM</td><td><input type="text"></td><td>31.0 a 36.0 g/dL</td></tr>
+                    <tr><td>RDW</td><td><input type="text"></td><td>11.5 a 14.5 %</td></tr>
+
+                    <tr><td colspan="3" class="sub-header">Leucograma (Série Branca)</td></tr>
+                    <tr><td>Leucócitos Totais</td><td><input type="text"></td><td>4.000 a 10.000 /mm³</td></tr>
+                    <tr><td>Neutrófilos Bastonetes</td><td><input type="text" placeholder="% ou /mm³"></td><td>0 a 5 %</td></tr>
+                    <tr><td>Neutrófilos Segmentados</td><td><input type="text" placeholder="% ou /mm³"></td><td>45 a 70 %</td></tr>
+                    <tr><td>Eosinófilos</td><td><input type="text" placeholder="% ou /mm³"></td><td>1 a 5 %</td></tr>
+                    <tr><td>Basófilos</td><td><input type="text" placeholder="% ou /mm³"></td><td>0 a 1 %</td></tr>
+                    <tr><td>Linfócitos</td><td><input type="text" placeholder="% ou /mm³"></td><td>20 a 40 %</td></tr>
+                    <tr><td>Monócitos</td><td><input type="text" placeholder="% ou /mm³"></td><td>2 a 10 %</td></tr>
+
+                    <tr><td colspan="3" class="sub-header">Plaquetograma</td></tr>
+                    <tr><td>Plaquetas</td><td><input type="text"></td><td>150.000 a 450.000 /mm³</td></tr>
+                    <tr><td>VPM (Vol. Plaquetário Médio)</td><td><input type="text"></td><td>7.0 a 11.0 fL</td></tr>
                 </table>
             </div>
 
             <div id="bioquimica" class="exam-section">
-                <h3 class="exam-title">Exames Bioquímicos</h3>
+                <h3 class="exam-title">Painel Bioquímico</h3>
                 <table class="result-table">
                     <tr><th>Exame</th><th>Resultado</th><th>Valores de Referência</th></tr>
+                    
+                    <tr><td colspan="3" class="sub-header">Metabolismo dos Carboidratos</td></tr>
                     <tr><td>Glicose em Jejum</td><td><input type="text"></td><td>70 a 99 mg/dL</td></tr>
+                    <tr><td>Hemoglobina Glicada (HbA1c)</td><td><input type="text"></td><td>Inferior a 5.7 %</td></tr>
+
+                    <tr><td colspan="3" class="sub-header">Perfil Lipídico</td></tr>
                     <tr><td>Colesterol Total</td><td><input type="text"></td><td>Menor que 190 mg/dL</td></tr>
+                    <tr><td>Colesterol HDL</td><td><input type="text"></td><td>Maior que 40 mg/dL</td></tr>
+                    <tr><td>Colesterol LDL</td><td><input type="text"></td><td>Menor que 130 mg/dL</td></tr>
+                    <tr><td>Colesterol VLDL</td><td><input type="text"></td><td>Até 30 mg/dL</td></tr>
                     <tr><td>Triglicerídeos</td><td><input type="text"></td><td>Menor que 150 mg/dL</td></tr>
+
+                    <tr><td colspan="3" class="sub-header">Função Renal e Eletrólitos</td></tr>
+                    <tr><td>Ureia</td><td><input type="text"></td><td>15 a 45 mg/dL</td></tr>
+                    <tr><td>Creatinina</td><td><input type="text"></td><td>0.6 a 1.2 mg/dL</td></tr>
+                    <tr><td>Ácido Úrico</td><td><input type="text"></td><td>3.4 a 7.0 mg/dL</td></tr>
+                    <tr><td>Sódio (Na)</td><td><input type="text"></td><td>135 a 145 mEq/L</td></tr>
+                    <tr><td>Potássio (K)</td><td><input type="text"></td><td>3.5 a 5.1 mEq/L</td></tr>
+
+                    <tr><td colspan="3" class="sub-header">Função Hepática</td></tr>
+                    <tr><td>TGO / AST</td><td><input type="text"></td><td>Até 37 U/L</td></tr>
+                    <tr><td>TGP / ALT</td><td><input type="text"></td><td>Até 41 U/L</td></tr>
+                    <tr><td>Gama GT</td><td><input type="text"></td><td>8 a 61 U/L</td></tr>
+                    <tr><td>Fosfatase Alcalina</td><td><input type="text"></td><td>40 a 129 U/L</td></tr>
                 </table>
             </div>
 
             <div id="parasitologico" class="exam-section">
-                <h3 class="exam-title">Parasitológico de Fezes</h3>
+                <h3 class="exam-title">Exame Parasitológico de Fezes (EPF)</h3>
                 <table class="result-table">
                     <tr><th>Parâmetro</th><th>Resultado</th></tr>
-                    <tr><td>Consistência</td><td><input type="text" placeholder="Ex: Pastosa"></td></tr>
-                    <tr><td>Pesquisa de Cistos/Ovos</td><td><input type="text" placeholder="Ex: Negativo"></td></tr>
+                    
+                    <tr><td colspan="2" class="sub-header">Exame Macroscópico</td></tr>
+                    <tr><td>Cor</td><td><input type="text" placeholder="Ex: Castanha"></td></tr>
+                    <tr><td>Consistência</td><td><input type="text" placeholder="Ex: Pastosa, Líquida, Formada"></td></tr>
+                    <tr><td>Muco</td><td><input type="text" placeholder="Ex: Ausente"></td></tr>
+                    <tr><td>Sangue</td><td><input type="text" placeholder="Ex: Ausente"></td></tr>
+
+                    <tr><td colspan="2" class="sub-header">Exame Microscópico</td></tr>
+                    <tr><td>Helmintos (Ovos / Larvas)</td><td><input type="text" placeholder="Ex: Negativo"></td></tr>
+                    <tr><td>Protozoários (Cistos / Trofozoítos)</td><td><input type="text" placeholder="Ex: Negativo"></td></tr>
+                    <tr><td>Outros achados</td><td><input type="text" placeholder="Flora, Leucócitos, etc."></td></tr>
                 </table>
             </div>
 
             <div id="urinalise" class="exam-section">
-                <h3 class="exam-title">Urinálise (EAS)</h3>
+                <h3 class="exam-title">Urinálise (EAS - Elementos Anormais e Sedimentos)</h3>
                 <table class="result-table">
                     <tr><th>Parâmetro</th><th>Resultado</th><th>Valores de Referência</th></tr>
+                    
+                    <tr><td colspan="3" class="sub-header">Exame Físico</td></tr>
                     <tr><td>Cor</td><td><input type="text"></td><td>Amarelo Citrino</td></tr>
                     <tr><td>Aspecto</td><td><input type="text"></td><td>Límpido</td></tr>
-                    <tr><td>pH</td><td><input type="text"></td><td>5,0 a 7,0</td></tr>
+                    <tr><td>Densidade</td><td><input type="text"></td><td>1.015 a 1.025</td></tr>
+
+                    <tr><td colspan="3" class="sub-header">Exame Químico</td></tr>
+                    <tr><td>pH</td><td><input type="text"></td><td>5.0 a 7.0</td></tr>
                     <tr><td>Proteínas</td><td><input type="text"></td><td>Ausente</td></tr>
+                    <tr><td>Glicose</td><td><input type="text"></td><td>Ausente</td></tr>
+                    <tr><td>Corpos Cetônicos</td><td><input type="text"></td><td>Ausente</td></tr>
+                    <tr><td>Bilirrubina</td><td><input type="text"></td><td>Ausente</td></tr>
+                    <tr><td>Urobilinogênio</td><td><input type="text"></td><td>Normal</td></tr>
+                    <tr><td>Sangue Oculto</td><td><input type="text"></td><td>Ausente</td></tr>
+                    <tr><td>Nitrito</td><td><input type="text"></td><td>Negativo</td></tr>
+
+                    <tr><td colspan="3" class="sub-header">Sedimentoscopia (Microscopia)</td></tr>
+                    <tr><td>Células Epiteliais Desc.</td><td><input type="text"></td><td>Raras</td></tr>
+                    <tr><td>Leucócitos (Piocitos)</td><td><input type="text"></td><td>Até 5 por campo</td></tr>
+                    <tr><td>Hemácias</td><td><input type="text"></td><td>Até 3 por campo</td></tr>
+                    <tr><td>Cilindros</td><td><input type="text"></td><td>Ausentes</td></tr>
+                    <tr><td>Cristais</td><td><input type="text"></td><td>Ausentes</td></tr>
+                    <tr><td>Flora Bacteriana</td><td><input type="text"></td><td>Discreta</td></tr>
                 </table>
             </div>
 
             <div id="tipagem" class="exam-section">
-                <h3 class="exam-title">Tipagem Sanguínea (Banco de Sangue)</h3>
+                <h3 class="exam-title">Imunohematologia - Banco de Sangue</h3>
                 <table class="result-table">
-                    <tr><th>Sistema</th><th>Resultado</th></tr>
-                    <tr><td>Grupo ABO</td><td><input type="text" placeholder="Ex: O"></td></tr>
-                    <tr><td>Fator Rh</td><td><input type="text" placeholder="Ex: Positivo (+)"></td></tr>
+                    <tr><th>Sistema / Teste</th><th>Resultado</th></tr>
+                    <tr><td>Grupo Sanguíneo (ABO)</td><td><input type="text" placeholder="A, B, AB ou O"></td></tr>
+                    <tr><td>Fator Rh (Antígeno D)</td><td><input type="text" placeholder="Positivo ou Negativo"></td></tr>
+                    <tr><td>Pesquisa de Anticorpos Irregulares (Coombs Indireto)</td><td><input type="text" placeholder="Negativo"></td></tr>
+                    <tr><td>Teste de Antiglobulina Direto (Coombs Direto)</td><td><input type="text" placeholder="Negativo"></td></tr>
                 </table>
             </div>
 
             <div id="sorologia" class="exam-section">
-                <h3 class="exam-title">Exames Sorológicos</h3>
+                <h3 class="exam-title">Painel Sorológico e Imunológico</h3>
                 <table class="result-table">
                     <tr><th>Exame</th><th>Resultado</th><th>Valores de Referência</th></tr>
-                    <tr><td>PCR (Proteína C Reativa)</td><td><input type="text"></td><td>Menor que 0,5 mg/dL</td></tr>
-                    <tr><td>ASLO</td><td><input type="text"></td><td>Até 200 UI/mL</td></tr>
+                    <tr><td>Proteína C Reativa (PCR) - Ultrassensível</td><td><input type="text"></td><td>Menor que 0.3 mg/dL</td></tr>
+                    <tr><td>Antiestreptolisina O (ASLO)</td><td><input type="text"></td><td>Até 200 UI/mL</td></tr>
                     <tr><td>Fator Reumatoide (FR)</td><td><input type="text"></td><td>Menor que 14 UI/mL</td></tr>
-                    <tr><td>VDRL</td><td><input type="text" placeholder="Ex: Não Reagente"></td><td>Não Reagente</td></tr>
+                    <tr><td colspan="3" class="sub-header">Sífilis (Lues)</td></tr>
+                    <tr><td>VDRL / RPR</td><td><input type="text" placeholder="Não Reagente"></td><td>Não Reagente</td></tr>
+                    <tr><td>VDRL - Titulação (se reagente)</td><td><input type="text" placeholder="Ex: 1/8"></td><td>-</td></tr>
                 </table>
             </div>
 
@@ -173,50 +222,36 @@
                 <p style="font-size: 0.8rem; color: #a0aec0;">Documento gerado eletronicamente - Assinatura do Responsável Técnico</p>
             </div>
 
-        </div> <button class="btn-pdf" onclick="gerarPDF()">📄 Gerar PDF do Laudo</button>
+        </div> 
+
+        <button class="btn-pdf" onclick="gerarPDF()">📄 Gerar PDF do Laudo</button>
 
     </div>
 
     <script>
-        // Função para alternar entre as abas de exames
         function showExam(examId) {
-            // 1. Pega todas as seções de exames e as oculta
             const sections = document.querySelectorAll('.exam-section');
-            sections.forEach(section => {
-                section.classList.remove('active');
-            });
+            sections.forEach(section => section.classList.remove('active'));
 
-            // 2. Pega todos os botões do menu e tira a cor de ativo
             const buttons = document.querySelectorAll('.menu-btn');
-            buttons.forEach(btn => {
-                btn.classList.remove('active');
-            });
+            buttons.forEach(btn => btn.classList.remove('active'));
 
-            // 3. Mostra o exame correto
             document.getElementById(examId).classList.add('active');
-
-            // 4. Deixa o botão clicado com a cor ativa
             event.target.classList.add('active');
         }
 
-        // Função para gerar o PDF usando a biblioteca html2pdf
         function gerarPDF() {
-            // Pega o elemento HTML que queremos transformar em PDF
             const elemento = document.getElementById('laudo-pdf-area');
-            
-            // Pega o nome do paciente para dar o nome ao arquivo (opcional e elegante)
             const nomePaciente = document.querySelector('.patient-data input[type="text"]').value || 'Paciente';
 
-            // Configurações do PDF
             const opcoes = {
-                margin:       10, // margem em milímetros
+                margin:       10, 
                 filename:     'Laudo_' + nomePaciente + '.pdf',
                 image:        { type: 'jpeg', quality: 0.98 },
-                html2canvas:  { scale: 2 }, // Aumenta a resolução da captura
+                html2canvas:  { scale: 2 }, 
                 jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
             };
 
-            // Mágica acontece aqui: a biblioteca pega o elemento, aplica as opções e salva
             html2pdf().set(opcoes).from(elemento).save();
         }
     </script>
