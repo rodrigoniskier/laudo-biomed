@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Laudos - Análises Clínicas</title>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
+    <style>
+        /* RESET BÁSICO */
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background-color: #f0f4f8; color: #333; display: flex; height: 100vh; }
+
+        /* BARRA LATERAL (MENU) */
+        .sidebar { width: 250px; background-color: #1a365d; color: white; padding: 20px; display: flex; flex-direction: column; gap: 10px; overflow-y: auto; }
+        .sidebar h2 { font-size: 1.2rem; margin-bottom: 20px; text-align: center; border-bottom: 1px solid #2a4365; padding-bottom: 10px; }
+        .menu-btn { background-color: #2a4365; color: white; border: none; padding: 10px; border-radius: 5px; cursor: pointer; text-align: left; font-size: 1rem; transition: background 0.3s; }
+        .menu-btn:hover, .menu-btn.active { background-color: #4299e1; }
+
+        /* ÁREA PRINCIPAL */
+        .main-content { flex: 1; padding: 30px; display: flex; flex-direction: column; align-items: center; overflow-y: auto; }
+        
+        /* CONTÊINER DO LAUDO (Área que vai para o PDF) */
+        .laudo-container { background-color: white; width: 100%; max-width: 800px; padding: 40px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); margin-bottom: 20px; }
+        
+        /* CABEÇALHO DO LAUDO */
+        .header-laudo { border-bottom: 2px solid #2b6cb0; padding-bottom: 15px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: flex-end; }
+        .header-laudo h1 { color: #2b6cb0; font-size: 1.8rem; }
+        .header-laudo p { font-size: 0.9rem; color: #718096; }
+
+        /* DADOS DO PACIENTE */
+        .patient-data { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 30px; background-color: #f7fafc; padding: 15px; border-radius: 5px; border: 1px solid #e2e8f0; }
+        .input-group { display: flex; flex-direction: column; gap: 5px; }
+        .input-group label { font-weight: bold; font-size: 0.85rem; color: #4a5568; }
+        .input-group input { padding: 8px; border: 1px solid #cbd5e0; border-radius: 4px; font-size: 0.9rem; }
+        .input-group input:focus { outline: none; border-color: #3182ce; }
+
+        /* SEÇÕES DE EXAMES */
+        .exam-section { display: none; } /* Escondido por padrão */
+        .exam-section.active { display: block; } /* Exibido quando ativo */
+        .exam-title { background-color: #ebf8ff; color: #2b6cb0; padding: 10px; margin-bottom: 15px; border-radius: 4px; font-size: 1.2rem; text-align: center; }
+
+        /* TABELA DE RESULTADOS */
+        .result-table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+        .result-table th, .result-table td { border: 1px solid #e2e8f0; padding: 10px; text-align: left; }
+        .result-table th { background-color: #f7fafc; color: #4a5568; font-size: 0.9rem; }
+        .result-table input { width: 100%; border: none; border-bottom: 1px dashed #cbd5e0; padding: 5px; font-size: 0.95rem; background: transparent; }
+        .result-table input:focus { outline: none; border-bottom-color: #3182ce; }
+
+        /* BOTÃO DE GERAR PDF */
+        .btn-pdf { background-color: #48bb78; color: white; border: none; padding: 15px 30px; border-radius: 5px; cursor: pointer; font-size: 1.1rem; font-weight: bold; transition: background 0.3s; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
+        .btn-pdf:hover { background-color: #38a169; }
+    </style>
+</head>
+<body>
+
+    <div class="sidebar">
+        <h2>🔬 LabWeb - Painel</h2>
+        <button class="menu-btn active" onclick="showExam('hemograma')">Hemograma</button>
+        <button class="menu-btn" onclick="showExam('bioquimica')">Bioquímica</button>
+        <button class="menu-btn" onclick="showExam('parasitologico')">Parasitológico</button>
+        <button class="menu-btn" onclick="showExam('urinalise')">Urinálise</button>
+        <button class="menu-btn" onclick="showExam('tipagem')">Tipagem Sanguínea</button>
+        <button class="menu-btn" onclick="showExam('sorologia')">Sorologia</button>
+    </div>
+
+    <div class="main-content">
+        
+        <div id="laudo-pdf-area" class="laudo-container">
+            
+            <div class="header-laudo">
+                <div>
+                    <h1>Laboratório Clínico</h1>
+                    <p>Excelência em Diagnóstico</p>
+                </div>
+                <div style="text-align: right;">
+                    <p>Data: <script>document.write(new Date().toLocaleDateString('pt-BR'))</script></p>
+                </div>
+            </div>
+
+            <div class="patient-data">
+                <div class="input-group">
+                    <label>Nome do Paciente:</label>
+                    <input type="text" placeholder="Nome completo">
+                </div>
+                <div class="input-group">
+                    <label>Idade / Sexo:</label>
+                    <input type="text" placeholder="Ex: 35 anos / Masculino">
+                </div>
+                <div class="input-group">
+                    <label>Médico Solicitante:</label>
+                    <input type="text" placeholder="Nome do médico">
+                </div>
+                <div class="input-group">
+                    <label>Data da Coleta:</label>
+                    <input type="date">
+                </div>
+            </div>
+
+            <div id="hemograma" class="exam-section active">
+                <h3 class="exam-title">Hemograma Completo</h3>
+                <table class="result-table">
+                    <tr>
+                        <th>Exame</th><th>Resultado</th><th>Valores de Referência</th>
+                    </tr>
+                    <tr>
+                        <td>Hemácias</td><td><input type="text" placeholder="Ex: 4.5"></td><td>4.0 a 5.5 milhões/mm³</td>
+                    </tr>
+                    <tr>
+                        <td>Hemoglobina</td><td><input type="text" placeholder="Ex: 13.0"></td><td>12.0 a 16.0 g/dL</td>
+                    </tr>
+                    <tr>
+                        <td>Leucócitos Totais</td><td><input type="text" placeholder="Ex: 7500"></td><td>4.000 a 10.000 /mm³</td>
+                    </tr>
+                    <tr>
+                        <td>Plaquetas</td><td><input type="text" placeholder="Ex: 250000"></td><td>150.000 a 450.000 /mm³</td>
+                    </tr>
+                </table>
+            </div>
+
+            <div id="bioquimica" class="exam-section">
+                <h3 class="exam-title">Exames Bioquímicos</h3>
+                <table class="result-table">
+                    <tr><th>Exame</th><th>Resultado</th><th>Valores de Referência</th></tr>
+                    <tr><td>Glicose em Jejum</td><td><input type="text"></td><td>70 a 99 mg/dL</td></tr>
+                    <tr><td>Colesterol Total</td><td><input type="text"></td><td>Menor que 190 mg/dL</td></tr>
+                    <tr><td>Triglicerídeos</td><td><input type="text"></td><td>Menor que 150 mg/dL</td></tr>
+                </table>
+            </div>
+
+            <div id="parasitologico" class="exam-section">
+                <h3 class="exam-title">Parasitológico de Fezes</h3>
+                <table class="result-table">
+                    <tr><th>Parâmetro</th><th>Resultado</th></tr>
+                    <tr><td>Consistência</td><td><input type="text" placeholder="Ex: Pastosa"></td></tr>
+                    <tr><td>Pesquisa de Cistos/Ovos</td><td><input type="text" placeholder="Ex: Negativo"></td></tr>
+                </table>
+            </div>
+
+            <div id="urinalise" class="exam-section">
+                <h3 class="exam-title">Urinálise (EAS)</h3>
+                <table class="result-table">
+                    <tr><th>Parâmetro</th><th>Resultado</th><th>Valores de Referência</th></tr>
+                    <tr><td>Cor</td><td><input type="text"></td><td>Amarelo Citrino</td></tr>
+                    <tr><td>Aspecto</td><td><input type="text"></td><td>Límpido</td></tr>
+                    <tr><td>pH</td><td><input type="text"></td><td>5,0 a 7,0</td></tr>
+                    <tr><td>Proteínas</td><td><input type="text"></td><td>Ausente</td></tr>
+                </table>
+            </div>
+
+            <div id="tipagem" class="exam-section">
+                <h3 class="exam-title">Tipagem Sanguínea (Banco de Sangue)</h3>
+                <table class="result-table">
+                    <tr><th>Sistema</th><th>Resultado</th></tr>
+                    <tr><td>Grupo ABO</td><td><input type="text" placeholder="Ex: O"></td></tr>
+                    <tr><td>Fator Rh</td><td><input type="text" placeholder="Ex: Positivo (+)"></td></tr>
+                </table>
+            </div>
+
+            <div id="sorologia" class="exam-section">
+                <h3 class="exam-title">Exames Sorológicos</h3>
+                <table class="result-table">
+                    <tr><th>Exame</th><th>Resultado</th><th>Valores de Referência</th></tr>
+                    <tr><td>PCR (Proteína C Reativa)</td><td><input type="text"></td><td>Menor que 0,5 mg/dL</td></tr>
+                    <tr><td>ASLO</td><td><input type="text"></td><td>Até 200 UI/mL</td></tr>
+                    <tr><td>Fator Reumatoide (FR)</td><td><input type="text"></td><td>Menor que 14 UI/mL</td></tr>
+                    <tr><td>VDRL</td><td><input type="text" placeholder="Ex: Não Reagente"></td><td>Não Reagente</td></tr>
+                </table>
+            </div>
+
+            <div style="margin-top: 40px; text-align: center; border-top: 1px solid #e2e8f0; padding-top: 20px;">
+                <p style="font-size: 0.8rem; color: #a0aec0;">Documento gerado eletronicamente - Assinatura do Responsável Técnico</p>
+            </div>
+
+        </div> <button class="btn-pdf" onclick="gerarPDF()">📄 Gerar PDF do Laudo</button>
+
+    </div>
+
+    <script>
+        // Função para alternar entre as abas de exames
+        function showExam(examId) {
+            // 1. Pega todas as seções de exames e as oculta
+            const sections = document.querySelectorAll('.exam-section');
+            sections.forEach(section => {
+                section.classList.remove('active');
+            });
+
+            // 2. Pega todos os botões do menu e tira a cor de ativo
+            const buttons = document.querySelectorAll('.menu-btn');
+            buttons.forEach(btn => {
+                btn.classList.remove('active');
+            });
+
+            // 3. Mostra o exame correto
+            document.getElementById(examId).classList.add('active');
+
+            // 4. Deixa o botão clicado com a cor ativa
+            event.target.classList.add('active');
+        }
+
+        // Função para gerar o PDF usando a biblioteca html2pdf
+        function gerarPDF() {
+            // Pega o elemento HTML que queremos transformar em PDF
+            const elemento = document.getElementById('laudo-pdf-area');
+            
+            // Pega o nome do paciente para dar o nome ao arquivo (opcional e elegante)
+            const nomePaciente = document.querySelector('.patient-data input[type="text"]').value || 'Paciente';
+
+            // Configurações do PDF
+            const opcoes = {
+                margin:       10, // margem em milímetros
+                filename:     'Laudo_' + nomePaciente + '.pdf',
+                image:        { type: 'jpeg', quality: 0.98 },
+                html2canvas:  { scale: 2 }, // Aumenta a resolução da captura
+                jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+            };
+
+            // Mágica acontece aqui: a biblioteca pega o elemento, aplica as opções e salva
+            html2pdf().set(opcoes).from(elemento).save();
+        }
+    </script>
+</body>
+</html>
